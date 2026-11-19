@@ -1,22 +1,78 @@
 services:
-  lab-service:
-    container_name: lab-service
-    image: nginxinc/nginx-unprivileged:alpine
+  postgres:
+    container_name: authentik-postgres
+    image: ghcr.io/joeckr/postgres:18
     restart: unless-stopped
-    ports:
-      - "8080:8080"
     environment:
-      - ENV=lab
-      - LOG_LEVEL=debug
+      POSTGRES_DB: authentik
+      POSTGRES_USER: authentik
+      POSTGRES_PASSWORD: changeme  # betterleaks:allow
     volumes:
-      - lab-data:/tmp/data
+      - postgres-data:/tmp
     healthcheck:
-      test: ["CMD-SHELL", "wget -q --spider http://localhost:8080/ || exit 1"]
+      test: ["CMD-SHELL", "pg_isready -U authentik -d authentik"]
       interval: 15s
       timeout: 5s
-      retries: 3
-      start_period: 5s
+      retries: 5
+      start_period: 10s
+
+  server:
+    container_name: authentik-server
+    image: ghcr.io/goauthentik/server:2026.8.5
+    restart: unless-stopped
+    command: server
+    depends_on:
+      postgres:
+        condition: service_healthy
+    ports:
+      - "9000:9000"
+      - "9443:9443"
+    environment:
+      AUTHENTIK_SECRET_KEY: changeme-replace-with-a-long-random-secret-key  # betterleaks:allow
+      AUTHENTIK_POSTGRESQL__HOST: postgres
+      AUTHENTIK_POSTGRESQL__PORT: 5432
+      AUTHENTIK_POSTGRESQL__NAME: authentik
+      AUTHENTIK_POSTGRESQL__USER: authentik
+      AUTHENTIK_POSTGRESQL__PASSWORD: changeme  # betterleaks:allow
+      AUTHENTIK_LOG_LEVEL: info
+      AUTHENTIK_ERROR_REPORTING__ENABLED: "false"
+    volumes:
+      - authentik-media:/media
+    healthcheck:
+      test: ["CMD", "python3", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:9000/-/health/ready/')"]
+      interval: 15s
+      timeout: 5s
+      retries: 5
+      start_period: 30s
+
+  worker:
+    container_name: authentik-worker
+    image: ghcr.io/goauthentik/server:2026.8.5
+    restart: unless-stopped
+    command: worker
+    depends_on:
+      postgres:
+        condition: service_healthy
+    environment:
+      AUTHENTIK_SECRET_KEY: changeme-replace-with-a-long-random-secret-key  # betterleaks:allow
+      AUTHENTIK_POSTGRESQL__HOST: postgres
+      AUTHENTIK_POSTGRESQL__PORT: 5432
+      AUTHENTIK_POSTGRESQL__NAME: authentik
+      AUTHENTIK_POSTGRESQL__USER: authentik
+      AUTHENTIK_POSTGRESQL__PASSWORD: changeme  # betterleaks:allow
+      AUTHENTIK_LOG_LEVEL: info
+      AUTHENTIK_ERROR_REPORTING__ENABLED: "false"
+    volumes:
+      - authentik-media:/media
+    healthcheck:
+      test: ["CMD", "ak", "healthcheck"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+      start_period: 30s
 
 volumes:
-  lab-data:
+  postgres-data:
+    driver: local
+  authentik-media:
     driver: local

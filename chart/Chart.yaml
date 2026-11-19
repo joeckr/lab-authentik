@@ -1,6 +1,12 @@
 apiVersion: v2
-name: lab-service
-description: Helm chart for experimenting with new services in a lab environment
+name: lab-authentik
+description: Helm chart for deploying Authentik on a hardened Talos Kubernetes cluster
 type: application
 version: 0.2.1
-appVersion: "0.2.1"
+appVersion: "2026.8.5"
+
+dependencies:
+  - name: postgres
+    version: "0.2.3"
+    repository: "oci://ghcr.io/joeckr/charts"
+    condition: postgres.enabled

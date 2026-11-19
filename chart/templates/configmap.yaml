@@ -1,0 +1,23 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ include "lab-authentik.fullname" . }}-config
+  labels:
+    {{- include "lab-authentik.labels" . | nindent 4 }}
+data:
+  AUTHENTIK_POSTGRESQL__HOST: {{ include "lab-authentik.postgresHost" . | quote }}
+  AUTHENTIK_POSTGRESQL__PORT: {{ include "lab-authentik.postgresPort" . | quote }}
+  AUTHENTIK_POSTGRESQL__NAME: {{ include "lab-authentik.postgresDb" . | quote }}
+  AUTHENTIK_POSTGRESQL__USER: {{ include "lab-authentik.postgresUser" . | quote }}
+  AUTHENTIK_LOG_LEVEL: {{ .Values.authentik.logLevel | quote }}
+  AUTHENTIK_ERROR_REPORTING__ENABLED: {{ .Values.authentik.errorReporting.enabled | quote }}
+  AUTHENTIK_DISABLE_UPDATE_CHECK: {{ .Values.authentik.disableUpdateCheck | quote }}
+  AUTHENTIK_LISTEN__HTTP: {{ printf "0.0.0.0:%v" .Values.server.ports.http | quote }}
+  AUTHENTIK_LISTEN__HTTPS: {{ printf "0.0.0.0:%v" .Values.server.ports.https | quote }}
+  AUTHENTIK_LISTEN__METRICS: {{ printf "0.0.0.0:%v" .Values.server.ports.metrics | quote }}
+  {{- if .Values.authentik.trustedProxyCidrs }}
+  AUTHENTIK_LISTEN__TRUSTED_PROXY_CIDRS: {{ .Values.authentik.trustedProxyCidrs | quote }}
+  {{- end }}
+  {{- range $key, $value := .Values.authentik.extraEnv }}
+  {{ $key }}: {{ $value | quote }}
+  {{- end }}
