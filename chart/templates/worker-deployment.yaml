@@ -1,0 +1,103 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "lab-authentik.fullname" . }}-worker
+  labels:
+    {{- include "lab-authentik.labels" . | nindent 4 }}
+    app.kubernetes.io/component: worker
+spec:
+  replicas: {{ .Values.worker.replicaCount }}
+  selector:
+    matchLabels:
+      {{- include "lab-authentik.workerSelectorLabels" . | nindent 6 }}
+  template:
+    metadata:
+      labels:
+        {{- include "lab-authentik.labels" . | nindent 8 }}
+        {{- include "lab-authentik.workerSelectorLabels" . | nindent 8 }}
+      annotations:
+        checksum/config: {{ include (print $.Template.BasePath "/configmap.yaml") . | sha256sum }}
+        {{- if not .Values.authentik.existingSecret }}
+        checksum/secret: {{ include (print $.Template.BasePath "/secret.yaml") . | sha256sum }}
+        {{- end }}
+    spec:
+      automountServiceAccountToken: false
+      {{- with .Values.authentik.podSecurityContext }}
+      securityContext:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.authentik.nodeSelector }}
+      nodeSelector:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.authentik.affinity }}
+      affinity:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.authentik.tolerations }}
+      tolerations:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      volumes:
+        - name: tmp
+          emptyDir: {}
+        - name: media
+          {{- if .Values.persistence.media.enabled }}
+          persistentVolumeClaim:
+            claimName: {{ include "lab-authentik.fullname" . }}-media
+          {{- else }}
+          emptyDir: {}
+          {{- end }}
+      containers:
+        - name: worker
+          image: "{{ .Values.authentik.image.repository }}:{{ .Values.authentik.image.tag }}"
+          imagePullPolicy: {{ .Values.authentik.image.pullPolicy }}
+          args:
+            - worker
+          {{- with .Values.authentik.securityContext }}
+          securityContext:
+            {{- toYaml . | nindent 12 }}
+          {{- end }}
+          ports:
+            - name: metrics
+              containerPort: {{ .Values.worker.ports.metrics }}
+              protocol: TCP
+          envFrom:
+            - configMapRef:
+                name: {{ include "lab-authentik.fullname" . }}-config
+            - secretRef:
+                name: {{ include "lab-authentik.secretName" . }}
+          volumeMounts:
+            - name: tmp
+              mountPath: /tmp
+            - name: media
+              mountPath: /media
+          startupProbe:
+            exec:
+              command:
+                - ak
+                - healthcheck
+            initialDelaySeconds: 15
+            periodSeconds: 10
+            timeoutSeconds: 10
+            failureThreshold: 30
+          livenessProbe:
+            exec:
+              command:
+                - ak
+                - healthcheck
+            periodSeconds: 30
+            timeoutSeconds: 10
+            failureThreshold: 3
+          readinessProbe:
+            exec:
+              command:
+                - ak
+                - healthcheck
+            periodSeconds: 30
+            timeoutSeconds: 10
+            failureThreshold: 3
+          {{- with .Values.worker.resources }}
+          resources:
+            {{- toYaml . | nindent 12 }}
+          {{- end }}
