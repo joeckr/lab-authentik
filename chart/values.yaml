@@ -104,7 +104,7 @@ httpRoute:
       namespace: gateway
       sectionName: web
   hostnames:
-    - "auth.joeckr.dev"
+    - "authentik.joeckr.dev"
   path: /
   pathType: PathPrefix
   filters: []
