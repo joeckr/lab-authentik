@@ -17,8 +17,11 @@ spec:
         {{- include "lab-authentik.serverSelectorLabels" . | nindent 8 }}
       annotations:
         checksum/config: {{ include (print $.Template.BasePath "/configmap.yaml") . | sha256sum }}
-        {{- if not .Values.authentik.existingSecret }}
+        {{- if and .Values.authentik.secretCreate (not .Values.authentik.existingSecret) }}
         checksum/secret: {{ include (print $.Template.BasePath "/secret.yaml") . | sha256sum }}
+        {{- end }}
+        {{- with .Values.authentik.podAnnotations }}
+        {{- toYaml . | nindent 8 }}
         {{- end }}
     spec:
       automountServiceAccountToken: false

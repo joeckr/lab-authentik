@@ -106,7 +106,7 @@ PostgreSQL connection helpers
 
 {{- define "lab-authentik.postgresPassword" -}}
 {{- if .Values.postgres.enabled }}
-{{- .Values.postgres.app.password }}
+{{- .Values.postgres.secret.data.POSTGRES_PASSWORD }}
 {{- else }}
 {{- .Values.externalPostgres.password }}
 {{- end }}
