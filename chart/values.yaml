@@ -6,9 +6,11 @@ authentik:
     pullPolicy: IfNotPresent
 
   # Secret key for Authentik signing/encryption (50+ random characters recommended in production).
-  # Provide existingSecret instead to manage credentials externally (e.g., SealedSecrets/ExternalSecrets).
+  # Set secretCreate: false or provide existingSecret to manage credentials externally (e.g., External Secrets Operator).
+  secretCreate: true
   secretKey: "changeme-replace-with-a-long-random-secret-key"  # betterleaks:allow
   existingSecret: ""
+  podAnnotations: {}
 
   # Optional initial admin bootstrap settings (only used on first run)
   bootstrap:
@@ -109,7 +111,7 @@ httpRoute:
   pathType: PathPrefix
   filters: []
 
-# Embedded rootless PostgreSQL subchart (https://github.com/joeckr/oci-postgres, v0.3.0)
+# Embedded rootless PostgreSQL subchart (https://github.com/joeckr/oci-postgres, v0.4.0)
 postgres:
   enabled: true
   app:
@@ -123,7 +125,6 @@ postgres:
     port: 5432
     db: authentik
     user: authentik
-    password: "changeme"  # betterleaks:allow
     storageAccessMode: ReadWriteOnce
     storageSize: 5Gi
     storageClass: "longhorn"
@@ -146,6 +147,13 @@ postgres:
           - ALL
   initSchema:
     enabled: false
+  secret:
+    create: true
+    existingSecret: ""
+    keys:
+      password: "POSTGRES_PASSWORD"  # betterleaks:allow
+    data:
+      POSTGRES_PASSWORD: "changeme"  # betterleaks:allow
 
 # External PostgreSQL settings (used only when postgres.enabled is false)
 externalPostgres:
