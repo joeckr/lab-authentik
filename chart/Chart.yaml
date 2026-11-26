@@ -2,8 +2,8 @@ apiVersion: v2
 name: lab-authentik
 description: Helm chart for deploying Authentik on a hardened Talos Kubernetes cluster
 type: application
-version: 0.1.2
-appVersion: "0.1.2"
+version: 0.2.0
+appVersion: "0.2.0"
 dependencies:
   - name: postgres
     version: "0.4.0"
