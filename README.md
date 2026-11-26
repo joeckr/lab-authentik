@@ -12,7 +12,7 @@ Helm chart and local lab environment for deploying [Authentik](https://goauthent
   - Runs `ghcr.io/goauthentik/server` (`2026.8.5`) as dedicated `server` and `worker` Deployments with health/readiness/startup probes.
   - Strictly compliant with Kubernetes **Restricted PSS** (`runAsNonRoot: true`, `runAsUser: 1000`, `fsGroup: 1000`, `allowPrivilegeEscalation: false`, `capabilities.drop: [ALL]`, `seccompProfile: RuntimeDefault`, `automountServiceAccountToken: false`).
 - **Rootless PostgreSQL Subchart ([`joeckr/oci-postgres`](https://github.com/joeckr/oci-postgres))**:
-  - Declared as an OCI Helm dependency (`oci://ghcr.io/joeckr/charts`, `postgres` `0.2.3`) using `ghcr.io/joeckr/postgres:18`.
+  - Declared as an OCI Helm dependency (`oci://ghcr.io/joeckr/charts`, `postgres` `0.3.0`) using `ghcr.io/joeckr/postgres:0.3.0`.
   - Runs rootless under Restricted PSS with `PGDATA=/tmp/data` backed by a Longhorn PVC.
   - Can be disabled (`postgres.enabled=false`) in favor of an external PostgreSQL database (`externalPostgres.*`).
 - **Longhorn Storage (`persistence.media` & `postgres`)**:
@@ -22,7 +22,7 @@ Helm chart and local lab environment for deploying [Authentik](https://goauthent
   - Exposes Authentik via a `gateway.networking.k8s.io/v1` `HTTPRoute` attached to your Traefik `Gateway` (`parentRefs`).
   - Configures `AUTHENTIK_LISTEN__TRUSTED_PROXY_CIDRS` so Authentik trusts `X-Forwarded-Proto` and `X-Forwarded-For` headers forwarded from Cloudflare Tunnel through Traefik.
 - **Local Compose (`compose.yml`)**:
-  - Runs `ghcr.io/joeckr/postgres:18` alongside Authentik `server` and `worker` locally with Podman Compose.
+  - Runs `ghcr.io/joeckr/postgres:0.3.0` alongside Authentik `server` and `worker` locally with Podman Compose.
 
 ---
 
