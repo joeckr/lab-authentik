@@ -109,16 +109,16 @@ httpRoute:
   pathType: PathPrefix
   filters: []
 
-# Embedded rootless PostgreSQL subchart (https://github.com/joeckr/oci-postgres, v0.2.3)
+# Embedded rootless PostgreSQL subchart (https://github.com/joeckr/oci-postgres, v0.3.0)
 postgres:
   enabled: true
-  postgres:
+  app:
     # Must be <= 15 characters (used as Kubernetes container port name by oci-postgres)
     name: authentik-pg
-    app: authentik-pg
     replicaCount: 1
     image: ghcr.io/joeckr/postgres
-    tag: "18"
+    # Overrides the image tag whose default is the chart appVersion.
+    tag: ""
     pullPolicy: IfNotPresent
     port: 5432
     db: authentik

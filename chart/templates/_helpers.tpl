@@ -74,7 +74,7 @@ PostgreSQL connection helpers
 */}}
 {{- define "lab-authentik.postgresHost" -}}
 {{- if .Values.postgres.enabled }}
-{{- .Values.postgres.postgres.name }}
+{{- .Values.postgres.app.name }}
 {{- else }}
 {{- .Values.externalPostgres.host }}
 {{- end }}
@@ -82,7 +82,7 @@ PostgreSQL connection helpers
 
 {{- define "lab-authentik.postgresPort" -}}
 {{- if .Values.postgres.enabled }}
-{{- .Values.postgres.postgres.port }}
+{{- .Values.postgres.app.port }}
 {{- else }}
 {{- .Values.externalPostgres.port }}
 {{- end }}
@@ -90,7 +90,7 @@ PostgreSQL connection helpers
 
 {{- define "lab-authentik.postgresDb" -}}
 {{- if .Values.postgres.enabled }}
-{{- .Values.postgres.postgres.db }}
+{{- .Values.postgres.app.db }}
 {{- else }}
 {{- .Values.externalPostgres.db }}
 {{- end }}
@@ -98,7 +98,7 @@ PostgreSQL connection helpers
 
 {{- define "lab-authentik.postgresUser" -}}
 {{- if .Values.postgres.enabled }}
-{{- .Values.postgres.postgres.user }}
+{{- .Values.postgres.app.user }}
 {{- else }}
 {{- .Values.externalPostgres.user }}
 {{- end }}
@@ -106,7 +106,7 @@ PostgreSQL connection helpers
 
 {{- define "lab-authentik.postgresPassword" -}}
 {{- if .Values.postgres.enabled }}
-{{- .Values.postgres.postgres.password }}
+{{- .Values.postgres.app.password }}
 {{- else }}
 {{- .Values.externalPostgres.password }}
 {{- end }}
